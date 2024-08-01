@@ -13,8 +13,8 @@ python3 dl_classification.py
 --**device : {cpu, gpu}, default=cpu**  
 --**n_nodes : {76, 379}, default=379**  
 &emsp;&emsp; 76 = working memory network, 379 = whole brain network  
---**model : {**GCNConv**, GCN, NN}, default=GCNConv**  
-&emsp;&emsp; GCNConv = Residual GCN, GCN = Simple GCN, NN = Multi Layer Peceptron  
+--**model : {NN, GCN, residual_GCN}, default=residual_GCN**  
+&emsp;&emsp; NN = Multi Layer Peceptron, GCN = Simple GCN, residual_GCN = Residual GCN (NeuroGraph),    
 --**seed : *int*, default=123**   
 --**epochs : *int*, default=100**  
 --**lr : *float*, default=1e-3**
@@ -34,8 +34,8 @@ python3 dl_regression.py
 --**score_type {CPTOmZs, CodingZs, DigitBwdSpanZs, lswm, dccs, pcps}, default=CPTOmZs**  
 &emsp;&emsp; Bright scores: CPTOmZs (sustained attention), CodingZs (processing speed), DigitBwdSpanZs (executive function)  
 &emsp;&emsp; DHCP scores: lswm (working memory), dccs (executive function), pcps (processing speed)  
---**model : {GCNConv, GCN, or NN}, default=GCNConv**  
-&emsp;&emsp; GCNConv = Residual GCN, GCN = Simple GCN, NN = Multi Layer Peceptron  
+--**model : {NN, GCN, residual_GCN}, default=residual_GCN**  
+&emsp;&emsp; NN = Multi Layer Peceptron, GCN = Simple GCN, residual_GCN = Residual GCN (NeuroGraph),  
 --**seed : *int*, default=123**  
 --**epochs : *int*, default=100**  
 --**lr : *float*, default=1e-2**
