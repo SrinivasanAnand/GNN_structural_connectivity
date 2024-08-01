@@ -20,6 +20,7 @@ from sklearn.decomposition import PCA
 from sklearn.metrics import accuracy_score
 import numpy as np
 from utils import *
+from configs import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='combined')
@@ -34,16 +35,7 @@ args.n_estimators = 100
 args.svm_kernel = 'rbf'
 fix_seed(args.seed)
 
-root_dir = "/research_jude/rgs01_jude/dept/DI/DIcode/Anand/Data/"
-
-dhcp_parent_dir = "/research_jude/rgs01_jude/dept/DI/DIcode/Anand/Data/DHCP/"
-dhcp_raw_dir = os.path.join(dhcp_parent_dir, "raw")
-dhcp_labels_filename = "cognitivescores_135subjects.csv"
-dhcp_labels_filepath = os.path.join(dhcp_raw_dir, dhcp_labels_filename)
-
-bright_parent_dir = "/research_jude/rgs01_jude/dept/DI/DIcode/Anand/Data/Bright/"
-bright_labels_filename = "bright_cognitive_scores.csv"
-
+# Load datasets
 if ('DHCP' in args.dataset):
     dataset = DHCP(dhcp_parent_dir, dhcp_raw_dir, dhcp_labels_filepath, args.n_nodes, args.score_type)
     external_dataset = None

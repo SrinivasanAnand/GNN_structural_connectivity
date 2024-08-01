@@ -24,13 +24,14 @@ from combined_preprocessing import Bright_DHCP
 from models.models import *
 from models.neurograph_residual_network import *
 from utils import *
+from configs import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='combined')
 parser.add_argument('--device', type=str, default='cpu')
 parser.add_argument('--n_nodes', type=int, default=379)
 parser.add_argument('--seed', type=int, default=123)
-parser.add_argument('--model', type=str, default="GCNConv")
+parser.add_argument('--model', type=str, default="residual_GCN")
 parser.add_argument('--epochs', type=int, default=100)
 parser.add_argument('--lr', type=float, default=1e-3)
 args = parser.parse_args()
@@ -51,17 +52,6 @@ if not os.path.isdir(path):
 fix_seed(args.seed)
 
 #Load datasets
-root_dir = "/research_jude/rgs01_jude/dept/DI/DIcode/Anand/Data/"
-
-dhcp_parent_dir = "/research_jude/rgs01_jude/dept/DI/DIcode/Anand/Data/DHCP/"
-dhcp_raw_dir = os.path.join(dhcp_parent_dir, "raw")
-dhcp_labels_filename = "cognitivescores_135subjects.csv"
-dhcp_labels_filepath = os.path.join(dhcp_raw_dir, dhcp_labels_filename)
-
-bright_parent_dir = "/research_jude/rgs01_jude/dept/DI/DIcode/Anand/Data/Bright/"
-bright_labels_filename = "bright_cognitive_scores.csv"
-
-
 if ('DHCP' in args.dataset):
     dataset = DHCP(dhcp_parent_dir, dhcp_raw_dir, dhcp_labels_filepath, args.n_nodes, args.score_type)
     external_dataset = None
@@ -223,9 +213,12 @@ if (args.model == 'NN'):
     model = SimpleNNClf(args.num_features * args.num_features, args.num_classes)
 elif (args.model == 'GCN'):
     model = GCNClf(args.num_features)
-else:
-    gnn = eval(args.model)
+elif (args.model == 'residual_GCN'):
+    gnn = eval('GCNConv')
     model = ResidualGNNClfs(args, train_dataset, 32, 64, 3, gnn).to(args.device)
+else:
+    print("Invalid model")
+    exit(0)
 
 print(model)
 total_params = sum(p.numel() for p in model.parameters())

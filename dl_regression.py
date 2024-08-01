@@ -23,14 +23,15 @@ from preprocessing_bright.preprocess import Bright
 from models.models import *
 from models.neurograph_residual_network import *
 from utils import *
+from configs import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', type=str, default='combined')
+parser.add_argument('--dataset', type=str, default='bright')
 parser.add_argument('--device', type=str, default='cpu')
 parser.add_argument('--n_nodes', type=int, default=76)
 parser.add_argument('--score_type', type=str, default='CPTOmZs')
 parser.add_argument('--seed', type=int, default=123)
-parser.add_argument('--model', type=str, default="GCNConv")
+parser.add_argument('--model', type=str, default="residual_GCN")
 parser.add_argument('--epochs', type=int, default=100)
 parser.add_argument('--lr', type=float, default=1e-2)
 args = parser.parse_args()
@@ -40,7 +41,7 @@ args.batch_size = 16
 args.early_stopping = 50
 args.weight_decay = 0.0005
 args.dropout = 0.5
-args.num_features = dataset.num_features
+args.num_features = args.n_nodes
 args.num_classes = 1
 
 path = "checkpoints/"
@@ -50,16 +51,6 @@ if not os.path.isdir(path):
 fix_seed(args.seed)
 
 #Load datasets
-root_dir = "/research_jude/rgs01_jude/dept/DI/DIcode/Anand/Data/"
-
-dhcp_parent_dir = "/research_jude/rgs01_jude/dept/DI/DIcode/Anand/Data/DHCP/"
-dhcp_raw_dir = os.path.join(dhcp_parent_dir, "raw")
-dhcp_labels_filename = "cognitivescores_135subjects.csv"
-dhcp_labels_filepath = os.path.join(dhcp_raw_dir, dhcp_labels_filename)
-
-bright_parent_dir = "/research_jude/rgs01_jude/dept/DI/DIcode/Anand/Data/Bright/"
-bright_labels_filename = "bright_cognitive_scores.csv"
-
 if ('DHCP' in args.dataset):
     dataset = DHCP(dhcp_parent_dir, dhcp_raw_dir, dhcp_labels_filepath, args.n_nodes, args.score_type)
 elif ('bright' in args.dataset):
@@ -122,9 +113,12 @@ if (args.model == 'NN'):
     model = SimpleNN(args.num_features * args.num_features, args.num_classes)
 elif (args.model == 'GCN'):
     model = GCN(args.num_features)
-else:
-    gnn = eval(args.model)
+elif (args.model == 'residual_GCN'):
+    gnn = eval('GCNConv')
     model = ResidualGNNs(args, train_dataset, 32, 64, 3, gnn).to(args.device)
+else:
+    print("Invalid model")
+    exit(0)
 
 print(model)
 total_params = sum(p.numel() for p in model.parameters())
