@@ -1,7 +1,10 @@
-# Cognitive Score Prediction Regression Tasks
+# Deep Learning for Cognitive Score Prediction
 # Author: Anand Srinivasan
 # Reddick Lab
 # Some code adapted from NeuroGraph -- https://github.com/Anwar-Said/NeuroGraph
+# Description:
+# Deep learning (GNNs & NN) for cognitive score prediction tasks
+# Models implemented in models/models.py and models/neurograph_residual_network.py
 
 import os,random
 import os.path as osp
@@ -15,19 +18,21 @@ from torch.optim.lr_scheduler import StepLR
 from torch_geometric.loader import DataLoader
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
-from utils import *
-from preprocessing.preprocess import DHCP
+from preprocessing_dhcp.preprocess import DHCP
 from preprocessing_bright.preprocess import Bright
+from models.models import *
+from models.neurograph_residual_network import *
+from utils import *
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', type=str, default='combined')
 parser.add_argument('--device', type=str, default='cpu')
-parser.add_argument('--n_nodes', type-int, default=76)
+parser.add_argument('--n_nodes', type=int, default=76)
 parser.add_argument('--score_type', type=str, default='CPTOmZs')
 parser.add_argument('--seed', type=int, default=123)
 parser.add_argument('--model', type=str, default="GCNConv")
 parser.add_argument('--epochs', type=int, default=100)
-parser.add_argument('--lr', type=float, default=1e-3)
+parser.add_argument('--lr', type=float, default=1e-2)
 args = parser.parse_args()
 
 # Other (non command line) args
@@ -44,10 +49,13 @@ if not os.path.isdir(path):
 
 fix_seed(args.seed)
 
+#Load datasets
+root_dir = "/research_jude/rgs01_jude/dept/DI/DIcode/Anand/Data/"
+
 dhcp_parent_dir = "/research_jude/rgs01_jude/dept/DI/DIcode/Anand/Data/DHCP/"
 dhcp_raw_dir = os.path.join(dhcp_parent_dir, "raw")
 dhcp_labels_filename = "cognitivescores_135subjects.csv"
-dhcp_labels_filepath = os.path.join(raw_dir, dhcp_labels_filename)
+dhcp_labels_filepath = os.path.join(dhcp_raw_dir, dhcp_labels_filename)
 
 bright_parent_dir = "/research_jude/rgs01_jude/dept/DI/DIcode/Anand/Data/Bright/"
 bright_labels_filename = "bright_cognitive_scores.csv"
@@ -79,9 +87,7 @@ train_loader = DataLoader(train_dataset, args.batch_size, shuffle=False)
 val_loader = DataLoader(val_dataset, args.batch_size, shuffle=False)
 test_loader = DataLoader(test_dataset, args.batch_size, shuffle=False)
 
-
-criterion = torch.nn.L1Loss()
-def train(train_loader):
+def train(model, train_loader, criterion):
     model.train()
     total_loss = 0
     for data in train_loader:  
@@ -95,7 +101,7 @@ def train(train_loader):
     return total_loss / len(train_loader)
 
 @torch.no_grad()
-def test(loader):
+def test(model, loader, criterion):
     model.eval()
     total_absolute_error = 0
     total_samples = 0
@@ -124,15 +130,16 @@ print(model)
 total_params = sum(p.numel() for p in model.parameters())
 print(f"Total number of parameters is: {total_params}")
 
+criterion = torch.nn.L1Loss()
 optimizer = Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
 val_loss_history, test_loss_history = [],[]
 best_val_loss = 1e10 #set arbitrarily high at start
 
 for epoch in range(args.epochs):
-    loss = train(train_loader)
-    val_loss= test(val_loader)
-    test_loss= test(test_loader)
+    loss = train(model, train_loader, criterion)
+    val_loss= test(model, val_loader, criterion)
+    test_loss= test(model, test_loader, criterion)
 
     print("epoch: {} -- loss: {}, val_loss: {}, test_loss:{}".format(
         epoch, np.round(loss.item(),6),np.round(val_loss,3), np.round(test_loss,3)))
