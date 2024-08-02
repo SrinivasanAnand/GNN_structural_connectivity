@@ -41,7 +41,7 @@ if ('DHCP' in args.dataset):
     external_dataset = None
     tags = None
 elif ('bright' in args.dataset):
-    dataset = Bright(bright_parent_dir, bright_labels_filename,ags.n_nodes, args.score_type)
+    dataset = Bright(bright_parent_dir, bright_labels_filename,args.n_nodes, args.score_type)
     external_dataset = DHCP(dhcp_parent_dir, dhcp_raw_dir, dhcp_labels_filepath, args.n_nodes, args.score_type)
     tags = None
 elif ('combined' in args.dataset):
